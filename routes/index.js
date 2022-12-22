@@ -15,26 +15,28 @@ const getSchool = async (name) => {
 const getMeal = async (sc_code, schul_code, date) => {
   const url = `https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=${process.env.NEIS_KEY}&Type=json&plndex=1&pSize=100&ATPT_OFCDC_SC_CODE=${sc_code}&SD_SCHUL_CODE=${schul_code}&MLSV_YMD=${date}`;
   // https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=37e50690809b4850988d26024975c558&Type=json&plndex=1&pSize=100&ATPT_OFCDC_SC_CODE=R10&SD_SCHUL_CODE=8750767&MLSV_YMD=20221227
-  let response = await fetch(url);
+  const response = await fetch(url);
 
-  let data = await response.json();
+  const data = await response.json();
 
-  let length = data.mealServiceDietInfo[0].head[0].list_total_count;
+  const length = data.mealServiceDietInfo[0].head[0].list_total_count;
 
-   /*switch(length){
-      case 1:
-        console.log('1');
-        return 1;
-     case 2:
-       console.log('2');
-       return 2;
-     case 3:
-       console.log('3');
-       return 3;
-    }*/
+  const arr = [];
 
+  if(length === 1) {
+    const meal = data.mealServiceDietInfo[1].row[0].DDISH_NM.split("<br/>");
+    const mealname = data.mealServiceDietInfo[1].row[0].MMEAL_SC_NM;
 
-  return data;
+    arr.push({[mealname] : meal});
+  } else {
+    for (let i = 0; i < length; i++) {
+      const meal = data.mealServiceDietInfo[1].row[i].DDISH_NM.split("<br/>");
+      const mealname = data.mealServiceDietInfo[1].row[i].MMEAL_SC_NM;
+
+      arr.push({[mealname] : meal })
+    }
+  }
+  return arr;
 }
 
 router.get('/school/meal/:name/:date', async (req, res, next) => {
@@ -45,29 +47,17 @@ router.get('/school/meal/:name/:date', async (req, res, next) => {
     const schul_code = data.schoolInfo[1].row[0].SD_SCHUL_CODE; // 표준학교코드
 
     // 20221221
-    const date = req.params.date;
+    let date = req.params.date;
 
     const meal = await getMeal(sc_code, schul_code, date);
 
-    const arr = [];
-
-    const breakfast = meal.mealServiceDietInfo[1].row[0].DDISH_NM.split("<br/>");
-    const lunch = meal.mealServiceDietInfo[1].row[1].DDISH_NM.split("<br/>");
-    const dinner = meal.mealServiceDietInfo[1].row[2].DDISH_NM.split("<br/>");
-
-    arr.push({
-      "breakfast" : breakfast,
-      "lunch": lunch,
-      "dinner": dinner
-    });
+    date = date.slice(0, 4) + '년 ' + date.slice(4, 6) + '월 ' + date.slice(6, 8) + '일';
 
     res.status(200).json({
       status: {
         code: 200,
-        message: "급식 정보를 불러오는데 성공하였습니다"
+        message: `${date}의 급식 정보를 불러오는데 성공하였습니다`
       },
-      menu: arr,
-      data,
       meal
     });
   } catch (error) {
@@ -75,7 +65,7 @@ router.get('/school/meal/:name/:date', async (req, res, next) => {
     next(error);
     res.status(400).json({
       code: 400,
-      message: "급식 데이터가 없습니다"
+      message: "급식 정보가 없습니다"
     });
   }
 })
