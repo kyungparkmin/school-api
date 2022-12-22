@@ -45,6 +45,7 @@ router.get('/school/meal/:name/:date', async (req, res, next) => {
 
     const sc_code = data.schoolInfo[1].row[0].ATPT_OFCDC_SC_CODE; // 시도교육청코드
     const schul_code = data.schoolInfo[1].row[0].SD_SCHUL_CODE; // 표준학교코드
+    const school_name = data.schoolInfo[1].row[0].SCHUL_NM;
 
     // 20221221
     let date = req.params.date;
@@ -56,8 +57,10 @@ router.get('/school/meal/:name/:date', async (req, res, next) => {
     res.status(200).json({
       status: {
         code: 200,
-        message: `${date}의 급식 정보를 불러오는데 성공하였습니다`
+        message: `급식 정보를 불러오는데 성공하였습니다`,
       },
+      date: `${date}`,
+      school: `${school_name}`,
       meal
     });
   } catch (error) {
