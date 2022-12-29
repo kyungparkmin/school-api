@@ -11,15 +11,6 @@ exports.getSchool = async (name) => {
 }
 
 exports.getMeal = async (sc_code, schul_code, date) => {
-  if(date === undefined) {
-    let today = new Date();
-    let year = today.getFullYear();
-    let month = ("0" + (1 + today.getMonth())).slice(-2);
-    let day = ("0" + today.getDate()).slice(-2);
-    date = year + month + day;
-
-    console.log(date);
-  }
 
   const url = `https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=${process.env.NEIS_KEY}&Type=json&plndex=1&pSize=100&ATPT_OFCDC_SC_CODE=${sc_code}&SD_SCHUL_CODE=${schul_code}&MLSV_YMD=${date}`;
 
@@ -30,6 +21,8 @@ exports.getMeal = async (sc_code, schul_code, date) => {
   const data = await response.json();
 
   const length = data.mealServiceDietInfo[0].head[0].list_total_count;
+
+  console.log(length);
 
   const arr = [];
 
@@ -67,4 +60,13 @@ exports.getOneMeal = async (sc_code, schul_code, date, type) => {
   const response = await fetch(url);
 
   const data = await response.json();
+
+  switch(type){
+    case '조식':
+      break;
+    case '중식':
+      break;
+    case '석식':
+      break;
+  }
 }
